@@ -202,7 +202,7 @@ def mostrar_acerca_de():
     acerca_de_ventana.configure(bg="#ADD8E6")
 
     texto_acerca_de = (
-        "Desarrollado por Gianni Lucena, Daniela Valbuena...\n"
+        "Desarrollado por Rosti Lucena, Gianni Lucena,\nDaniela Valbuena. "
         "Si necesitas ayuda, contáctanos en:\n"
         "ejemplo@gmail.com"
     )
