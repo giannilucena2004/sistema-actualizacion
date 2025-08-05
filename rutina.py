@@ -5,24 +5,50 @@ from tkcalendar import DateEntry
 import pymysql
 import threading
 
+# Paleta de colores y fuentes
+COLOR_BACKGROUND = "#f0f0f0"  # Un gris claro moderno
+COLOR_PRIMARY = "#2a628f"     # Azul oscuro para botones y títulos
+COLOR_TEXT = "#333333"        # Gris oscuro para el texto
+FONT_TITLE = ("Helvetica", 20, "bold")
+FONT_NORMAL = ("Helvetica", 10)
+FONT_BUTTON = ("Helvetica", 10, "bold")
+
 def abrir_ventana_actualizacion():
+    """Abre la ventana para actualizar registros"""
     nueva_ventana = tk.Toplevel()
     nueva_ventana.title("Actualizar registros")
     
-    # --- Lógica para centrar la ventana ---
-    ancho_ventana = 400
-    alto_ventana = 300
+    ancho_ventana = 450
+    alto_ventana = 250
     ancho_pantalla = nueva_ventana.winfo_screenwidth()
     alto_pantalla = nueva_ventana.winfo_screenheight()
     posicion_x = int((ancho_pantalla / 2) - (ancho_ventana / 2))
     posicion_y = int((alto_pantalla / 2) - (alto_ventana / 2))
     nueva_ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
-    # -------------------------------------
     
-    nueva_ventana.configure(bg="#ADD8E6")
+    nueva_ventana.configure(bg=COLOR_BACKGROUND)
 
-    tk.Label(nueva_ventana, text="Fecha de inicio:", bg="#ADD8E6").pack(pady=5)
-    entrada_inicio = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd", state="readonly")
+    # Frame para agrupar widgets y darles un padding
+    main_frame = tk.Frame(nueva_ventana, bg=COLOR_BACKGROUND, padx=20, pady=20)
+    main_frame.pack(expand=True)
+
+    tk.Label(
+        main_frame,
+        text="Selecciona la fecha de inicio:",
+        bg=COLOR_BACKGROUND,
+        fg=COLOR_TEXT,
+        font=FONT_NORMAL
+    ).pack(pady=(0, 5))
+
+    entrada_inicio = DateEntry(
+        main_frame, 
+        date_pattern="yyyy-mm-dd", 
+        state="readonly",
+        background=COLOR_PRIMARY, 
+        foreground='white', 
+        borderwidth=2,
+        font=FONT_NORMAL
+    )
     entrada_inicio.pack(pady=5)
 
     progreso_y_resultado = [0, 0, None]
@@ -85,7 +111,6 @@ def abrir_ventana_actualizacion():
             ) in enumerate(filas):
                 
                 progreso_y_resultado[0] = i + 1
-
                 cursor.execute(
                     "SELECT 1 FROM gastarti WHERE documento = %s", (documento,)
                 )
@@ -167,29 +192,32 @@ def abrir_ventana_actualizacion():
         nonlocal hilo
         hilo = threading.Thread(target=ejecutar_actualizacion_en_hilo)
         hilo.start()
-
         verificar_hilo()
 
-    boton_actualizar = tk.Button(
-        nueva_ventana, text="Actualizar", command=confirmar_actualizacion
+    boton_actualizar = ttk.Button(
+        main_frame,
+        text="Actualizar",
+        command=confirmar_actualizacion,
+        style="TButton"
     )
-    boton_actualizar.pack(pady=20)
+    boton_actualizar.pack(pady=(20, 10), ipadx=10, ipady=5)
     
-    label_progreso = tk.Label(nueva_ventana, text="", bg="#ADD8E6")
+    label_progreso = tk.Label(main_frame, text="", bg=COLOR_BACKGROUND)
 
     progressbar = ttk.Progressbar(
-        nueva_ventana,
+        main_frame,
         orient="horizontal",
         length=280
     )
     
     hilo = None
 
+
 def mostrar_acerca_de():
+    """Muestra la ventana de "Acerca de"""
     acerca_de_ventana = tk.Toplevel()
     acerca_de_ventana.title("Acerca de")
     
-    # --- Lógica para centrar la ventana ---
     ancho_ventana = 430
     alto_ventana = 200
     ancho_pantalla = acerca_de_ventana.winfo_screenwidth()
@@ -197,12 +225,11 @@ def mostrar_acerca_de():
     posicion_x = int((ancho_pantalla / 2) - (ancho_ventana / 2))
     posicion_y = int((alto_pantalla / 2) - (alto_ventana / 2))
     acerca_de_ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
-    # -------------------------------------
 
-    acerca_de_ventana.configure(bg="#ADD8E6")
+    acerca_de_ventana.configure(bg=COLOR_BACKGROUND)
 
     texto_acerca_de = (
-        "Desarrollado por Rosti Lucena, Gianni Lucena,\nDaniela Valbuena. "
+        "Desarrollado por Rosti Lucena, Gianni Lucena,\nDaniela Valbuena.\n\n"
         "Si necesitas ayuda, contáctanos en:\n"
         "ejemplo@gmail.com"
     )
@@ -210,17 +237,16 @@ def mostrar_acerca_de():
     tk.Label(
         acerca_de_ventana,
         text=texto_acerca_de,
-        bg="#ADD8E6",
-        font=("Arial", 12),
-        justify=tk.LEFT
-    ).pack(padx=20, pady=20)
+        bg=COLOR_BACKGROUND,
+        fg=COLOR_TEXT,
+        font=FONT_NORMAL,
+        justify=tk.CENTER
+    ).pack(padx=20, pady=20, expand=True)
 
-
-# Ventana principal
+# --- Ventana principal ---
 ventana = tk.Tk()
 ventana.title("Sistema de actualización de registros")
 
-# --- Lógica para centrar la ventana principal ---
 ancho_ventana = 600
 alto_ventana = 400
 ancho_pantalla = ventana.winfo_screenwidth()
@@ -228,27 +254,49 @@ alto_pantalla = ventana.winfo_screenheight()
 posicion_x = int((ancho_pantalla / 2) - (ancho_ventana / 2))
 posicion_y = int((alto_pantalla / 2) - (alto_ventana / 2))
 ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
-# -------------------------------------
 
-ventana.configure(bg="#ADD8E6")
+ventana.configure(bg=COLOR_BACKGROUND)
+
+# Encabezado con un color diferente para destacar
+header_frame = tk.Frame(ventana, bg=COLOR_PRIMARY)
+header_frame.pack(fill="x")
+tk.Label(
+    header_frame,
+    text="Sistema de actualización de registros",
+    bg=COLOR_PRIMARY,
+    fg="white",
+    font=FONT_TITLE,
+    pady=15
+).pack(fill="x")
+
+# Frame para el contenido principal con los botones
+main_frame = tk.Frame(ventana, bg=COLOR_BACKGROUND)
+main_frame.place(relx=0.5, rely=0.5, anchor="center")
 
 tk.Label(
-    ventana,
-    text="Sistema de actualización de registros",
-    bg="#ADD8E6",
-    font=("Arial", 20, "bold")
-).pack(pady=50)
+    main_frame,
+    text="Bienvenido al sistema de actualización de registros.\n"
+        "Haz clic en el botón para insertar nuevos registros desde una fecha específica.",
+    bg=COLOR_BACKGROUND,
+    fg=COLOR_TEXT,
+    font=FONT_NORMAL,
+    justify="center"
+).pack(pady=(5, 5))
 
-tk.Button(
-    ventana,
+# Botón con estilo ttk y tamaño ajustado
+ttk.Button(
+    main_frame,
     text="Actualizar registros",
-    command=abrir_ventana_actualizacion
-).place(relx=0.5, rely=0.5, anchor="center")
+    command=abrir_ventana_actualizacion,
+    style="TButton"
+).pack(pady=20, ipadx=10, ipady=5)
 
-tk.Button(
+# Botón de "Acerca de" en la esquina
+ttk.Button(
     ventana,
     text="Acerca de",
-    command=mostrar_acerca_de
+    command=mostrar_acerca_de,
+    style="TButton"
 ).place(relx=0.04, rely=0.95, anchor="sw")
 
 ventana.mainloop()
