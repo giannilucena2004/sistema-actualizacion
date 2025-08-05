@@ -10,23 +10,12 @@ def abrir_ventana_actualizacion():
     nueva_ventana.configure(bg="#DFF2BF")
 
     tk.Label(nueva_ventana, text="Fecha de inicio:", bg="#DFF2BF").pack(pady=5)
-    entrada_inicio = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd")
+    entrada_inicio = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd", state="readonly")
     entrada_inicio.pack(pady=5)
 
-    tk.Label(nueva_ventana, text="Fecha de fin:", bg="#DFF2BF").pack(pady=5)
-    entrada_fin = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd")
-    entrada_fin.pack(pady=5)
 
     def confirmar_actualizacion():
         fecha_inicio = entrada_inicio.get()
-        fecha_fin    = entrada_fin.get()
-
-        if fecha_inicio > fecha_fin:
-            messagebox.showwarning(
-                "Fechas inválidas",
-                "La fecha de inicio no puede ser posterior a la de fin."
-            )
-            return
 
         try:
             conectar = pymysql.connect(
@@ -49,10 +38,10 @@ def abrir_ventana_actualizacion():
                 FROM OPERTI
                 INNER JOIN OPERMV ON OPERTI.documento = OPERMV.documento
                 INNER JOIN LISTVEND ON OPERMV.cod_servidor = LISTVEND.codigo
-                WHERE OPERTI.emision BETWEEN %s AND %s
+                WHERE OPERTI.emision >= %s
                   AND OPERTI.tipodoc = 'FAC'
                   AND OPERMV.grupo = 'HON'
-            """, (fecha_inicio, fecha_fin))
+            """, (fecha_inicio))
             filas = cursor.fetchall()
 
             # 2) Plantilla INSERT en gastarti
@@ -115,7 +104,7 @@ def abrir_ventana_actualizacion():
             messagebox.showinfo(
                 "Actualización",
                 f"{len(filas)} Registros actualizados\n"
-                f"Desde: {fecha_inicio}\n hasta: {fecha_fin}"
+                f"Desde: {fecha_inicio}"
             )
 
         except Exception as e:
@@ -144,4 +133,4 @@ tk.Button(
     command=abrir_ventana_actualizacion
 ).place(relx=0.5, rely=0.5, anchor="center")
 
-ventana.mainloop()
+ventana.mainloop() 
