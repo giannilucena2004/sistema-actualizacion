@@ -44,6 +44,8 @@ def abrir_ventana_actualizacion():
             """, (fecha_inicio))
             filas = cursor.fetchall()
 
+            registros_insertados = 0
+
             # 2) Plantilla INSERT en gastarti
             insert_sql = """
                 INSERT INTO gastarti (
@@ -71,6 +73,15 @@ def abrir_ventana_actualizacion():
                 notas, estacion, baseimponible, uemisor
             ) in filas:
 
+            # --- NUEVA VERIFICACIÓN DE EXISTENCIA DEL REGISTRO ---
+                cursor.execute(
+                    "SELECT 1 FROM gastarti WHERE documento = %s", (documento,)
+                )
+                if cursor.fetchone():
+                    # El registro ya existe, lo saltamos
+                    continue
+                # --- FIN DE LA VERIFICACIÓN ---
+
                 # 3) Recuperar precio/costo unitario filtrando también por grupo y código
                 cursor.execute(
                     "SELECT costounit, preciounit FROM OPERMV "
@@ -95,6 +106,7 @@ def abrir_ventana_actualizacion():
                     notas, estacion, baseimponible, uemisor,
                     estatusdoc, totcosto, totbruto, totneto, totalfinal, totpagos
                 ))
+                registros_insertados += 1
 
             # 4) Commit una sola vez
             conectar.commit()
