@@ -8,15 +8,23 @@ import threading
 def abrir_ventana_actualizacion():
     nueva_ventana = tk.Toplevel()
     nueva_ventana.title("Actualizar registros")
-    nueva_ventana.geometry("400x300")
+    
+    # --- Lógica para centrar la ventana ---
+    ancho_ventana = 400
+    alto_ventana = 300
+    ancho_pantalla = nueva_ventana.winfo_screenwidth()
+    alto_pantalla = nueva_ventana.winfo_screenheight()
+    posicion_x = int((ancho_pantalla / 2) - (ancho_ventana / 2))
+    posicion_y = int((alto_pantalla / 2) - (alto_ventana / 2))
+    nueva_ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
+    # -------------------------------------
+    
     nueva_ventana.configure(bg="#ADD8E6")
 
     tk.Label(nueva_ventana, text="Fecha de inicio:", bg="#ADD8E6").pack(pady=5)
     entrada_inicio = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd", state="readonly")
     entrada_inicio.pack(pady=5)
 
-    # Creamos un contenedor para el resultado y el progreso
-    # [progreso_actual, total_registros, resultado]
     progreso_y_resultado = [0, 0, None]
 
     def ejecutar_actualizacion_en_hilo():
@@ -47,7 +55,6 @@ def abrir_ventana_actualizacion():
             """, (fecha_inicio,))
             filas = cursor.fetchall()
             
-            # Establecemos el total de registros en el contenedor
             progreso_y_resultado[1] = len(filas)
             
             registros_insertados = 0
@@ -77,7 +84,6 @@ def abrir_ventana_actualizacion():
                 notas, estacion, baseimponible, uemisor
             ) in enumerate(filas):
                 
-                # Actualizamos el progreso en el contenedor
                 progreso_y_resultado[0] = i + 1
 
                 cursor.execute(
@@ -118,7 +124,6 @@ def abrir_ventana_actualizacion():
     
     def verificar_hilo():
         if hilo.is_alive():
-            # Actualizamos la barra y el contador con los valores del hilo
             progreso_actual, total_registros, _ = progreso_y_resultado
             
             if total_registros > 0:
@@ -128,18 +133,18 @@ def abrir_ventana_actualizacion():
 
             nueva_ventana.after(50, verificar_hilo)
         else:
-            # El hilo terminó, actualizamos la GUI
             progressbar.stop()
             progressbar.pack_forget()
             label_progreso.pack_forget()
             boton_actualizar.config(state=tk.NORMAL)
             
             _, _, resultado = progreso_y_resultado
-            tipo, mensaje = resultado
-            if tipo == "success":
-                messagebox.showinfo("Actualización", mensaje)
-            else:
-                messagebox.showerror("Error al actualizar", mensaje)
+            if resultado is not None:
+                tipo, mensaje = resultado
+                if tipo == "success":
+                    messagebox.showinfo("Actualización", mensaje)
+                else:
+                    messagebox.showerror("Error al actualizar", mensaje)
             
             progreso_y_resultado[0] = 0
             progreso_y_resultado[1] = 0
@@ -150,7 +155,6 @@ def abrir_ventana_actualizacion():
         label_progreso.pack(pady=5)
         progressbar.pack(pady=5)
         
-        # Configuramos la barra para que sea determinista
         progressbar['mode'] = 'determinate'
         progressbar['value'] = 0
         progressbar['maximum'] = 100
@@ -166,7 +170,6 @@ def abrir_ventana_actualizacion():
     )
     boton_actualizar.pack(pady=20)
     
-    # Creamos la etiqueta para mostrar el progreso
     label_progreso = tk.Label(nueva_ventana, text="", bg="#ADD8E6")
 
     progressbar = ttk.Progressbar(
@@ -177,13 +180,20 @@ def abrir_ventana_actualizacion():
     
     hilo = None
 
-
-# Ventada Acerca de
-
 def mostrar_acerca_de():
     acerca_de_ventana = tk.Toplevel()
     acerca_de_ventana.title("Acerca de")
-    acerca_de_ventana.geometry("430x200")
+    
+    # --- Lógica para centrar la ventana ---
+    ancho_ventana = 430
+    alto_ventana = 200
+    ancho_pantalla = acerca_de_ventana.winfo_screenwidth()
+    alto_pantalla = acerca_de_ventana.winfo_screenheight()
+    posicion_x = int((ancho_pantalla / 2) - (ancho_ventana / 2))
+    posicion_y = int((alto_pantalla / 2) - (alto_ventana / 2))
+    acerca_de_ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
+    # -------------------------------------
+
     acerca_de_ventana.configure(bg="#ADD8E6")
 
     texto_acerca_de = (
@@ -203,8 +213,18 @@ def mostrar_acerca_de():
 
 # Ventana principal
 ventana = tk.Tk()
-ventana.geometry("600x400")
 ventana.title("Sistema de actualización de registros")
+
+# --- Lógica para centrar la ventana principal ---
+ancho_ventana = 600
+alto_ventana = 400
+ancho_pantalla = ventana.winfo_screenwidth()
+alto_pantalla = ventana.winfo_screenheight()
+posicion_x = int((ancho_pantalla / 2) - (ancho_ventana / 2))
+posicion_y = int((alto_pantalla / 2) - (alto_ventana / 2))
+ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
+# -------------------------------------
+
 ventana.configure(bg="#ADD8E6")
 
 tk.Label(
@@ -220,7 +240,6 @@ tk.Button(
     command=abrir_ventana_actualizacion
 ).place(relx=0.5, rely=0.5, anchor="center")
 
-# Boton acerca de
 tk.Button(
     ventana,
     text="Acerca de",
