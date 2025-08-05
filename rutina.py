@@ -15,11 +15,11 @@ def abrir_ventana_actualizacion():
     entrada_inicio = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd", state="readonly")
     entrada_inicio.pack(pady=5)
 
-    # Creamos un contenedor para guardar el resultado de la operación del hilo
-    resultado_operacion = []
+    # Creamos un contenedor para el resultado y el progreso
+    # [progreso_actual, total_registros, resultado]
+    progreso_y_resultado = [0, 0, None]
 
     def ejecutar_actualizacion_en_hilo():
-        # Esta es la nueva función que contendrá la lógica de la base de datos
         fecha_inicio = entrada_inicio.get()
         try:
             conectar = pymysql.connect(
@@ -46,6 +46,10 @@ def abrir_ventana_actualizacion():
                   AND OPERMV.grupo = 'HON'
             """, (fecha_inicio,))
             filas = cursor.fetchall()
+            
+            # Establecemos el total de registros en el contenedor
+            progreso_y_resultado[1] = len(filas)
+            
             registros_insertados = 0
             insert_sql = """
                 INSERT INTO gastarti (
@@ -65,13 +69,17 @@ def abrir_ventana_actualizacion():
                 )
             """
 
-            for (
+            for i, (
                 id_empresa, agencia, tipodoc, documento, pid,
                 codcliente, nombrecli, contacto, rif,
                 tipoprecio, emision, vence, recepcion,
                 nrocontrol, factorcamb, grupo, codigo,
                 notas, estacion, baseimponible, uemisor
-            ) in filas:
+            ) in enumerate(filas):
+                
+                # Actualizamos el progreso en el contenedor
+                progreso_y_resultado[0] = i + 1
+
                 cursor.execute(
                     "SELECT 1 FROM gastarti WHERE documento = %s", (documento,)
                 )
@@ -103,64 +111,71 @@ def abrir_ventana_actualizacion():
             cursor.close()
             conectar.close()
 
-            # Guardamos el resultado del éxito
-            resultado_operacion.append(("success", f"{registros_insertados} Registros actualizados\nDesde: {fecha_inicio}"))
+            progreso_y_resultado[2] = ("success", f"{registros_insertados} Registros nuevos insertados.\nDesde la fecha: {fecha_inicio}")
 
         except Exception as e:
-            # Guardamos el resultado del error
-            resultado_operacion.append(("error", str(e)))
-
+            progreso_y_resultado[2] = ("error", str(e))
+    
     def verificar_hilo():
-        # Verificamos si el hilo ha terminado
         if hilo.is_alive():
-            nueva_ventana.after(100, verificar_hilo)
+            # Actualizamos la barra y el contador con los valores del hilo
+            progreso_actual, total_registros, _ = progreso_y_resultado
+            
+            if total_registros > 0:
+                porcentaje = int((progreso_actual / total_registros) * 100)
+                progressbar['value'] = porcentaje
+                label_progreso.config(text=f"Actualizando {progreso_actual} de {total_registros}...")
+
+            nueva_ventana.after(50, verificar_hilo)
         else:
-            # El hilo terminó, podemos actualizar la GUI de forma segura
+            # El hilo terminó, actualizamos la GUI
             progressbar.stop()
             progressbar.pack_forget()
+            label_progreso.pack_forget()
             boton_actualizar.config(state=tk.NORMAL)
             
-            # Mostramos el mensaje de éxito o error
-            tipo, mensaje = resultado_operacion[0]
+            _, _, resultado = progreso_y_resultado
+            tipo, mensaje = resultado
             if tipo == "success":
                 messagebox.showinfo("Actualización", mensaje)
             else:
                 messagebox.showerror("Error al actualizar", mensaje)
             
-            # Vaciamos el contenedor para la próxima vez
-            resultado_operacion.clear()
+            progreso_y_resultado[0] = 0
+            progreso_y_resultado[1] = 0
+            progreso_y_resultado[2] = None
 
     def confirmar_actualizacion():
-        # Desactivamos el botón para evitar múltiples clics
         boton_actualizar.config(state=tk.DISABLED)
+        label_progreso.pack(pady=5)
+        progressbar.pack(pady=5)
         
-        # Mostramos y arrancamos la barra de progreso
-        progressbar.pack(pady=10)
-        progressbar.start()
+        # Configuramos la barra para que sea determinista
+        progressbar['mode'] = 'determinate'
+        progressbar['value'] = 0
+        progressbar['maximum'] = 100
 
-        # Creamos y ejecutamos el hilo que hará la tarea pesada
-        nonlocal hilo  # Usamos el hilo que se declarará a continuación
+        nonlocal hilo
         hilo = threading.Thread(target=ejecutar_actualizacion_en_hilo)
         hilo.start()
 
-        # Iniciamos el chequeo periódico para ver el estado del hilo
         verificar_hilo()
 
     boton_actualizar = tk.Button(
         nueva_ventana, text="Actualizar", command=confirmar_actualizacion
     )
     boton_actualizar.pack(pady=20)
+    
+    # Creamos la etiqueta para mostrar el progreso
+    label_progreso = tk.Label(nueva_ventana, text="", bg="#ADD8E6")
 
     progressbar = ttk.Progressbar(
         nueva_ventana,
         orient="horizontal",
-        mode="indeterminate",
         length=280
     )
     
-    # Declaramos el hilo para que sea accesible en las funciones anidadas
     hilo = None
-
 
 # Ventana principal
 ventana = tk.Tk()
