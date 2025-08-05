@@ -177,6 +177,30 @@ def abrir_ventana_actualizacion():
     
     hilo = None
 
+
+# Ventada Acerca de
+
+def mostrar_acerca_de():
+    acerca_de_ventana = tk.Toplevel()
+    acerca_de_ventana.title("Acerca de")
+    acerca_de_ventana.geometry("430x200")
+    acerca_de_ventana.configure(bg="#ADD8E6")
+
+    texto_acerca_de = (
+        "Desarrollado por Gianni Lucena, Daniela Valbuena...\n"
+        "Si necesitas ayuda, contáctanos en:\n"
+        "ejemplo@gmail.com"
+    )
+
+    tk.Label(
+        acerca_de_ventana,
+        text=texto_acerca_de,
+        bg="#ADD8E6",
+        font=("Arial", 12),
+        justify=tk.LEFT
+    ).pack(padx=20, pady=20)
+
+
 # Ventana principal
 ventana = tk.Tk()
 ventana.geometry("600x400")
@@ -195,5 +219,12 @@ tk.Button(
     text="Actualizar registros",
     command=abrir_ventana_actualizacion
 ).place(relx=0.5, rely=0.5, anchor="center")
+
+# Boton acerca de
+tk.Button(
+    ventana,
+    text="Acerca de",
+    command=mostrar_acerca_de
+).place(relx=0.04, rely=0.95, anchor="sw")
 
 ventana.mainloop()
