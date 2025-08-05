@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 from tkcalendar import DateEntry
 import pymysql
 
@@ -18,6 +19,10 @@ def abrir_ventana_actualizacion():
         fecha_inicio = entrada_inicio.get()
 
         try:
+
+            progressbar.pack(pady=10)
+            progressbar.start()
+
             conectar = pymysql.connect(
                 host='localhost', user='root', passwd='root',
                 db='adminrxdcmp', port=3306
@@ -113,6 +118,8 @@ def abrir_ventana_actualizacion():
             cursor.close()
             conectar.close()
 
+            progressbar.stop()
+
             messagebox.showinfo(
                 "Actualización",
                 f"{registros_insertados} Registros actualizados\n"
@@ -120,11 +127,21 @@ def abrir_ventana_actualizacion():
             )
 
         except Exception as e:
+            progressbar.stop()
+            progressbar.pack_forget()
             messagebox.showerror("Error al actualizar", str(e))
 
     tk.Button(
         nueva_ventana, text="Actualizar", command=confirmar_actualizacion
     ).pack(pady=20)
+
+    progressbar = ttk.Progressbar(
+        nueva_ventana, 
+        orient="horizontal", 
+        mode="indeterminate", 
+        length=280
+    )
+    
 
 # Ventana principal
 ventana = tk.Tk()
