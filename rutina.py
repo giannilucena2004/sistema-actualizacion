@@ -117,7 +117,12 @@ def abrir_ventana_actualizacion():
             cursor.close()
             conectar.close()
 
-            progreso_y_resultado[2] = ("success", f"{registros_insertados} Registros nuevos insertados.\nDesde la fecha: {fecha_inicio}")
+            if registros_insertados == 0:
+                mensaje_final = f"No se encontraron registros nuevos a partir de la fecha: {fecha_inicio}"
+            else:
+                mensaje_final = f"{registros_insertados} Registros nuevos insertados.\nDesde la fecha: {fecha_inicio}"
+            
+            progreso_y_resultado[2] = ("success", mensaje_final)
 
         except Exception as e:
             progreso_y_resultado[2] = ("error", str(e))
