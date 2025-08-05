@@ -7,9 +7,9 @@ def abrir_ventana_actualizacion():
     nueva_ventana = tk.Toplevel()
     nueva_ventana.title("Actualizar registros")
     nueva_ventana.geometry("400x300")
-    nueva_ventana.configure(bg="#DFF2BF")
+    nueva_ventana.configure(bg="#ADD8E6")
 
-    tk.Label(nueva_ventana, text="Fecha de inicio:", bg="#DFF2BF").pack(pady=5)
+    tk.Label(nueva_ventana, text="Fecha de inicio:", bg="#ADD8E6").pack(pady=5)
     entrada_inicio = DateEntry(nueva_ventana, date_pattern="yyyy-mm-dd", state="readonly")
     entrada_inicio.pack(pady=5)
 
@@ -115,7 +115,7 @@ def abrir_ventana_actualizacion():
 
             messagebox.showinfo(
                 "Actualización",
-                f"{len(filas)} Registros actualizados\n"
+                f"{registros_insertados} Registros actualizados\n"
                 f"Desde: {fecha_inicio}"
             )
 
